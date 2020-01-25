@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.1/dist/jquery.validate.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script>
+    function display(){
+      var str = "<tr class='text-light bg-dark'><td>ID</td><td>Name</td><td>Mobile</td><td>Email</td><td>Address</td><td>Status</td><td>Change</td><td colspan='2'>Actions</td></tr><tr>";
+        $.post("list.php","",
+        function(data,status){
+          var parsedData = $.parseJSON(data);
+          var i;
+          var id = parsedData[0];
+          var name = parsedData[1];
+          var mobile = parsedData[2];
+          var mail = parsedData[3];
+          var address = parsedData[4];
+          var status = parsedData[5];
+          for (i = 0; i < parsedData.length; i++){
+            str = str + "<td>"+parsedData[i]+"</td>";
+            if((i+1) % 6 == 0){
+              if(status == 1){
+                str=str+"<td data-id='"+id+"' data-status='"+status+"'><div id='statusIcon' style='border-radius: 10px; background-color: #4CAF50; width: 40px; height: 40px'></div></td>";
+              }
+              else {
+                str=str+"<td data-id='"+id+"' data-status='"+status+"'><div id='statusIcon' style='border-radius: 10px; background-color: red; width: 40px; height: 40px'></div></td>";
+              }
+              str=str+"<td data-id='"+id+"' data-name='"+name+"' data-mobile='"+mobile+"' data-mail='"+mail+"' data-address='"+address+"'>"
+              +"<button class='btn btn-warning' id='editItem'>Edit</button></td>"
+              +"<td data-id='"+id+"'><button class='btn btn-danger' id='removeItem'>Delete</button></td></tr><tr>";
+              id = parsedData[i+1];
+              name = parsedData[i+2];
+              mobile = parsedData[i+3];
+              mail = parsedData[i+4];
+              address = parsedData[i+5];
+              status = parsedData[i+6];
+            }
+          }
+          
+          if(parsedData.length > 5){
+            str=str+"</tr>";
+          }  
+            
+          $('#div11').html(str);
+          //$("#statusIcon").css("background-color", "#4CAF50");
+        });
+      };
+  </script>
+  <script>
+    //jQuery Ajax
+    $(document).ready(function(){
+      $("#nameError").hide();
+      $("#idField").hide();
+      $("#mobileError").hide();
+      $("#mailError").hide();
+      $("#addressError").hide();
+      $("#passwordError").hide();
+      $("#confirmPasswordError").hide();
+      $("#wrong").hide();
+      $("#buttonEdit").hide();
+      
+      // request list data
+      display();
+      // password confirmation check
+      $("#conpass").keyup(function(){
+        var pass = $("#pass").val();
+        var conpass = $("#conpass").val();
+        if(pass != conpass){
+          $("#wrong").show();
+          return false;
+        }
+        else {
+          $("#wrong").hide();
+          return false;
+        }
+      });
+    // click trigger
+    $("#buttonCreate").click(function(){
+      // form validation
+      var name = $("#name").val();
+      var mobile = $("#phone").val();
+      var mail = $("#mail").val();
+      var mailformat = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+      var address = $("#address").val();
+      var password = $("#pass").val();
+      var confirmPassword = $("#conpass").val();
+      if (name == null || name == "") {
+          $("#nameError").show();
+      }
+      else {
+          $("#nameError").hide();
+      }
+      if (mobile == null || mobile == "" || mobile.length<9 ) {
+          $("#mobileError").show();
+      }
+      else {
+          $("#mobileError").hide();
+      }
+      if (mail == null || mail == "" || !mailformat.test(mail) ) {
+          $("#mailError").show();
+      }
+      else {
+          $("#mailError").hide();
+      }
+      if (address == null || address == "") {
+          $("#addressError").show();
+      }
+      else {
+          $("#addressError").hide();
+      }
+      if (password == null || password == "") {
+          $("#passwordError").show();
+      }
+      else {
+          $("#passwordError").hide();
+      }
+      if (confirmPassword == null || confirmPassword == "") {
+          $("#confirmPasswordError").show();
+      }
+      else {
+          $("#confirmPasswordError").hide();
+      }
+      // form validation
+      $.post("new.php",$("form").serialize(),
+      function(data,status){
+        if(isEmptyObj(data) == true){
+          $("#wrong").hide();
+          alert(status);
+          // hide modal on success
+          $("#myModal").modal("hide");
+          // clear form fields
+          $('#myForm')[0].reset();
+          $("#stat1").text("Sucess").css("background-color", "green");
+          //$("#div11").html('');
+          //display();
+        }
+        else{
+          $("#stat").text("Failed").css("background-color", "red");
+        }
+        $("#div11").html('');
+        display();
+      });
+    });
+  }); 
+  </script>
+  <script>
+  // Check for empty array
+    function isEmptyObj(object) {
+      for (var key in object) {
+          if (object.hasOwnProperty(key)) {
+              return false;
+          }
+      }
+      return true;
+    }
+  </script>
+  <script>
+    $(function (){
+      // Edit function
+    $(document).on('click', '#editItem', function () {
+      var id = $(this).parent("td").data('id');
+      $("#idField").val(id);
+      $("#name").val($(this).parent("td").data('name'));
+      $("#phone").val($(this).parent("td").data('mobile'));
+      $("#mail").val($(this).parent("td").data('mail'));
+      $("#address").val($(this).parent("td").data('address'));
+      $("#buttonCreate").hide();
+      $("#buttonEdit").show();
+      $("#myModal").modal("show");
+      $("#buttonEdit").click(function() {
+      $.post("edit.php", $("form").serialize(),
+        function (data, textStatus, jqXHR) {
+          if(isEmptyObj(data) == true){
+          $("#wrong").hide();
+          // hide modal on success
+          $("#myModal").modal("hide");
+          // clear form fields
+          $('#myForm')[0].reset();
+          $("#stat1").text("Sucess").css("background-color", "green");
+          }
+          else{
+            $("#stat").text("Failed").css("background-color", "red");
+          }
+          $("#div11").html('');
+          display();
+          $("#buttonCreate").show();
+          $("#buttonEdit").hide();
+        },
+      );
+      });
+    });
+    // Delete function
+    $(document).on('click', '#removeItem', function () {
+      var confirmStr = confirm("Are you sure you want to delete?");
+      if(confirmStr == true){
+        var id = $(this).parent("td").data('id');
+        $.post("delete.php", {id: id},
+          function (data, textStatus) {
+            $("#div11").html('');
+            display();
+          }
+        ); 
+      } 
+    });
+    // Change status function
+    $(document).on('click', '#statusIcon', function () {
+      var id = $(this).parent("td").data('id');
+      var status = $(this).parent("td").data('status');
+      console.log(id,"Success");
+      if(status == 1){
+        $("#statusIcon").css("background-color", "red");
+        status = 0;
+      }
+      else{
+        $("#statusIcon").css("background-color", "#4CAF50");
+        status = 1;
+      }
+      $.post("status.php", {id: id, status: status},
+        function (data, textStatus) {
+          $("#div11").html('');
+            display();
+        }
+      );
+    });
+    });
+  </script>
+</head>
+<body>
+  <h2 class="text-light p-3 bg-dark d-flex justify-content-center">AJAX CRUD</h2><br>
+    <h4 id="stat1" style="color:white"></h4>
+
+  <!-- Edit form -->
+  <div class="modal" id="myModal">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="myForm" role="form">
+        <div class="row">
+      <div class="form-group col-xs-5 col-lg-10">
+        <label for="name">Name</label>
+        <p style="color:white; background-color:red;" id="nameError" >Plese enter a valid name</p>
+        <br><input type="text" name="name" class="form-control" id="name" required >
+        <input type="text" name="id" id="idField">
+      </div>
+        </div>
+    
+        <div class="row">
+      <div class="form-group col-xs-5 col-lg-10 ">
+        <label for="phone">Mobile</label>
+          <p style="color:white; background-color:red;" id="mobileError">Plese enter a valid Mobile number</p>
+          <br><input type="number" name="phone" class="form-control" id="phone">
+      </div>
+        </div>
+        
+        <div class="row">
+          <div class="form-group col-xs-5 col-lg-10 ">
+            <label for="mail">Email</label>
+              <p style="color:white; background-color:red;" id="mailError">Plese enter a valid email id</p>
+              <br><input type="email" name="mail" class="form-control" id="mail" required >
+          </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group col-xs-5 col-lg-10 ">
+                <label for="address">Address</label>
+                <p style="color:white; background-color:red;" id="addressError">Plese enter a valid address</p>
+                <br><input type="text" name="address" class="form-control" id="address" required >
+              </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group col-xs-5 col-lg-10 ">
+                    <label for="password">Password</label>
+                    <p style="color:white; background-color:red;" id="passwordError">Plese enter a valid password</p>
+                    <br><input type="password" name="pass" class="form-control" id="pass" required >
+                  </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="form-group col-xs-5 col-lg-10 ">
+                        <label for="conpass">Confirm Password</label>
+                          <p style="color:white; background-color:red;" id="confirmPasswordError">Please retype the password</p>
+                          <p id="wrong" style="color:white; background-color:red;">Incorrect password confirmation</p>
+                          <br><input type="password" name="conpass" class="form-control" id="conpass" required >
+                      </div> 
+                      </div>
+    
+    <div class="row">
+      <input class="btn btn-primary" type="button" value="Submit" id="buttonCreate">
+      <input class="btn btn-primary" type="button" value="Submit" id="buttonEdit">
+    </div>
+    </form>
+        </div>
+
+    </div>
+  </div>
+</div>
+  </div>
+
+
+  <div class="container">
+    <h2>Employee Details</h2>
+    <button class="btn btn-success float-right" id="myBtn" data-toggle="modal" data-target="#myModal">
+      Add New Employee
+    </button>
+    <table id="myTable" class="table table-bordered">
+        <tr class="d-flex justify-content-center">
+          <td>
+            <div id="div11"></div>
+          </td>
+        </tr>
+    </table>
+    </div>
+</body>
+</html>
+      <!--
+      <div class="modal-body">
+        <h4 style="color:white; background-color:red;" id="stat"></h4>
+          <form id="myForm" class="form-group" method="post" name="registration">
+            <p style="color:white; background-color:red;" id="nameError" >Plese enter a valid name</p>
+            Name: <br><input type="text" name="name" class="form-control" id="name" required ><br><br>
+
+            <p style="color:white; background-color:red;" id="mobileError">Plese enter a valid Mobile number</p>
+            Mobile: <br><input type="number" name="phone" class="form-control" id="phone"><br><br>
+
+            <p style="color:white; background-color:red;" id="mailError">Plese enter a valid email id</p>
+            Email: <br><input type="email" name="mail" class="form-control" id="mail"required ><br><br>
+
+            <p style="color:white; background-color:red;" id="addressError">Plese enter a valid address</p>
+            Address: <br><input type="text" name="address" class="form-control" id="address"required ><br><br>
+
+            <p style="color:white; background-color:red;" id="passwordError">Plese enter a valid password</p>
+            Password: <br><input type="password" name="pass" class="form-control" id="pass"required ><br><br>
+            
+            <p style="color:white; background-color:red;" id="confirmPasswordError">Please retype the password</p>
+            <p id="wrong" style="color:white; background-color:red;">Incorrect password confirmation</p>
+            Confirm: <br><input type="password" name="conpass" class="form-control" id="conpass" required ><br><br>
+
+            <input class="btn btn-primary" type="button" value="Submit" id="button">
+          </form>
+        </div>
+      </div>
+  </div>
+  -->

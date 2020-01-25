@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  <script>
+      $(document).ready(function () {
+          $("#submitButton").click(function () { 
+              $.get("https://api.openweathermap.org/data/2.5/weather/", {
+                "APPID": "2d0e51239fdd5816a4566c6440015145",
+                 "q": $("#city").val()
+               },
+                  function (data, textStatus) {
+                    $("#main").text(data.weather[0].main);
+                    $("#temp").text(data.main.temp);
+                    $("#wind").text(data.wind.speed); 
+                  }
+              );
+          });
+      });
+  </script>
+</head>
+<body>
+    <div class="jumbatron">
+        <h2>Weather API</h2>
+        <label for="city">Enter city:</label>
+        <input class="form-element" type="text" name="city" id="city">
+        <input id="submitButton" class="btn btn-success" type="submit" value="Search">
+    </div>
+    <div class="jumbatron">
+        <h4 id="main"></h4><br>
+        <h4 id="temp"></h4><br>
+        <h4 id="wind"></h4><br>
+    </div>
+</body>
+</html>
