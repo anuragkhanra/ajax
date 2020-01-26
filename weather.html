@@ -5,18 +5,36 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
   <script>
+      $.get("cities.php", {},
+          function (data, textStatus, jqXHR) {
+            var parsedData = $.parseJSON(data);
+            var i;
+            for (i = 0; i < parsedData.length; i++) {
+                var option = document.createElement("option");
+                option.text = parsedData[i];
+                option.value = parsedData[i];
+                var select = document.getElementById("city");
+                select.appendChild(option);
+            }  
+          }
+      );
       $(document).ready(function () {
           $("#submitButton").click(function () { 
-              $.get("https://api.openweathermap.org/data/2.5/weather/", {
+              if($("#city").val() == ''){
+                alert("Please select a city");
+              }
+              else {
+                $.get("https://api.openweathermap.org/data/2.5/weather/", {
                 "APPID": "2d0e51239fdd5816a4566c6440015145",
                  "q": $("#city").val()
-               },
+                },
                   function (data, textStatus) {
-                    $("#main").text(data.weather[0].main);
-                    $("#temp").text(data.main.temp);
-                    $("#wind").text(data.wind.speed); 
+                    $("#main").append(data.weather[0].main);
+                    $("#temp").append(data.main.temp);
+                    $("#wind").append(data.wind.speed); 
                   }
               );
+              }
           });
       });
   </script>
@@ -25,13 +43,16 @@
     <div class="jumbatron">
         <h2>Weather API</h2>
         <label for="city">Enter city:</label>
-        <input class="form-element" type="text" name="city" id="city">
+        <select name="city" id="city" class="form-element">
+            <option value="">__SELECT CITY__</option>
+        </select>
         <input id="submitButton" class="btn btn-success" type="submit" value="Search">
     </div>
     <div class="jumbatron">
-        <h4 id="main"></h4><br>
-        <h4 id="temp"></h4><br>
-        <h4 id="wind"></h4><br>
+        <h4 id="main">Feel: </h4><br>
+        <h4 id="temp">Temp: </h4><br>
+        <h4 id="wind">Wind: </h4><br>
+        <p id="p"></p>
     </div>
 </body>
 </html>
