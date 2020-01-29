@@ -5,7 +5,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
   <script>
-      $.get("cities.php", {},
+      /*$.get("cities.php", {},
           function (data, textStatus, jqXHR) {
             var parsedData = $.parseJSON(data);
             var i;
@@ -17,21 +17,46 @@
                 select.appendChild(option);
             }  
           }
+      );*/
+      // populate dropdown list
+      $.get("https://indian-cities-api-nocbegfhqg.now.sh/cities", {},
+          function (data, textStatus, jqXHR) {
+            var parsedData = data;//$.parseJSON(data);
+            var i;
+            for (i = 0; i < parsedData.length; i++) {
+                var option = document.createElement("option");
+                option.text = parsedData[i].City;
+                option.value = parsedData[i].City;
+                var select = document.getElementById("city");
+                select.appendChild(option);
+            }  
+          }
       );
       $(document).ready(function () {
+        // fetch weather details
           $("#submitButton").click(function () { 
               if($("#city").val() == ''){
                 alert("Please select a city");
               }
               else {
-                $.get("https://api.openweathermap.org/data/2.5/weather/", {
-                "APPID": "2d0e51239fdd5816a4566c6440015145",
-                 "q": $("#city").val()
+                $.get("https://api.openweathermap.org/data/2.5/weather/", 
+                {
+                  "APPID": "2d0e51239fdd5816a4566c6440015145",
+                  "q": $("#city").val()
                 },
                   function (data, textStatus) {
+                    $("#main").html('Feel: ');
+                    $("#temp").html('Temp: ');
+                    $("#wind").html('Wind: ');
+                    var icon = "http://openweathermap.org/img/wn/".concat(data.weather[0].icon,"@2x.png");
+                    var htmlString = "<img src='".concat(icon,"'>");
+                    var temp = Math.round(data.main.temp-273.15)
                     $("#main").append(data.weather[0].main);
-                    $("#temp").append(data.main.temp);
-                    $("#wind").append(data.wind.speed); 
+                    $("#temp").append(temp);
+                    $("#temp").append("&#8451;");
+                    $("#wind").append(data.wind.speed);
+                    $("#icon").html(htmlString);
+                    //$("#icon").css('background-color', 'black');
                   }
               );
               }
@@ -49,10 +74,10 @@
         <input id="submitButton" class="btn btn-success" type="submit" value="Search">
     </div>
     <div class="jumbatron">
+        <div id="icon"></div>
         <h4 id="main">Feel: </h4><br>
         <h4 id="temp">Temp: </h4><br>
         <h4 id="wind">Wind: </h4><br>
-        <p id="p"></p>
     </div>
 </body>
 </html>

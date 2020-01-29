@@ -17,6 +17,9 @@
          exit();
      }
     $result = mysqli_query($conn,"UPDATE `data` SET `Name`='".$_POST['name']."',
-     `Phone`='".$_POST['phone']."', `Mail`='".$_POST['mail']."', `address`='".$_POST['address']."', 
+     `Phone`='".$_POST['phone']."', `Mail`='".$_POST['mail']."', 
      `pass`='".$_POST['pass']."' WHERE `ID`='".$_POST['id']."'");
+     
+     $result1 = mysqli_query($conn,"UPDATE `emp_details` SET `address`='".$_POST['address']."',
+     `company`='".$_POST['company']."', `about`='".$_POST['about']."' WHERE `usr_id`='".$_POST['id']."'");
 ?>
